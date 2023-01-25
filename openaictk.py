@@ -1,6 +1,7 @@
 import tkinter as tk
 import tkinter.messagebox
 import customtkinter as ctk
+from customtkinter import CTkInputDialog
 import logging
 import openai
 from api_key import key
@@ -43,16 +44,20 @@ class OpenAIGUI(ctk.CTk):
         self.model_var = tk.StringVar()
         self.model_var.set("text-davinci-003")
         self.model_selector = tk.OptionMenu(self.sidebar_frame, self.model_var, *models)
+        self.model_selector.config(
+            font=("Sawasdee", 12), fg="White", bg="#004C99", highlightbackground="#404040", highlightcolor="#404040", activebackground="#004C99", disabledforeground="#404040")
 
-        self.tokenlabel = ctk.CTkLabel(self.sidebar_frame, text="Max tokens:", font=("Arial", 13, 'bold'))
+        self.tokenlabel = ctk.CTkLabel(
+            self.sidebar_frame, text="Max tokens:", font=("Arial", 13, 'bold'))
 
         self.max_tokens_var = tk.StringVar()
         self.max_tokens_var.set("256")
         self.max_tokens_selector = tk.OptionMenu(self.sidebar_frame, self.max_tokens_var, *max_tokens_list)
+        self.max_tokens_selector.config(font=("Sawasdee", 12), fg="White", bg="#004C99", highlightbackground="#404040", highlightcolor="#404040", activebackground="#004C99", disabledforeground="#404040")
 
-        self.generate_button = tk.Button(self, text="Generate", command=self.generate_response)
-        self.clear_button = tk.Button(self, text="Clear", command=self.clear_prompt)
-        self.quit_button = tk.Button(self, text="Quit", command=self.quit_app)
+        self.generate_button = tk.Button(self, text="Generate answer", fg="White", bg="#004C99", command=self.generate_response, font=("Sawasdee", 13))
+        self.clear_button = tk.Button(self, text="Clear prompt", fg="White", bg="#004C99", command=self.clear_prompt, font=("Sawasdee", 13))
+        self.quit_button = tk.Button(self, text="Quit app", fg="White", bg="#004C99", command=self.quit_app, font=("Sawasdee", 12))
 
         # Window customization
         self.appearance_mode_label = ctk.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
@@ -63,26 +68,30 @@ class OpenAIGUI(ctk.CTk):
         self.scaling_label.grid(row=11, column=0, padx=20, pady=(10, 0))
         self.scaling_optionemenu = ctk.CTkOptionMenu(self.sidebar_frame, values=scaling, command=self.change_scaling_event)
 
+        self.generate_button.bind("<Return>", self.generate_response)
+        self.clear_button.bind("<Delete>", self.clear_prompt)
+        self.quit_button.bind("<Escape>", self.quit_app)
+
     def _configure_layout(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure((2, 3), weight=0)
         self.grid_rowconfigure((0, 1, 2), weight=1)
-				self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
+        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
         # Sidebar
         self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
         self.modellabel.grid(row=1, column=0, sticky="N")
-        self.model_selector.grid(row=2, column=0, padx=20,pady=(10, 10))
+        self.model_selector.grid(row=2, column=0, padx=20, pady=(10, 10))
         self.tokenlabel.grid(row=3, column=0, sticky="N")
-        self.max_tokens_selector.grid(row=4, column=0, padx=20,pady=(10, 10), sticky="N")
+        self.max_tokens_selector.grid(row=4, column=0, padx=20, pady=(10, 10), sticky="N")
         self.scaling_optionemenu.grid(row=12, column=0, padx=20, pady=(10, 20))
         self.appearance_mode_optionemenu.grid(row=10, column=0, padx=20, pady=(10, 10))
         # Main bar
-        self.prompt_entry.grid(row=0, column=1,padx=(20, 5), pady=(20, 10), sticky="nsew")
-				self.textbox.grid(row=2, column=1, padx=(20, 5), pady=(20, 10), sticky="nsew")
-				self.generate_button.grid(row=6, column=1, padx=(20, 5),pady=(20, 10), sticky="NSWE")
-        self.clear_button.grid()
-        self.quit_button.grid(row=6, column=2, padx=(20, 5),pady=(20, 10), sticky="NSWE")
+        self.prompt_entry.grid(row=1, column=1, padx=(20, 5), pady=(20, 10), sticky="nsew")
+        self.textbox.grid(row=2, column=1, padx=(20, 5), pady=(20, 10), sticky="nsew")
+        self.generate_button.grid(row=6, column=1, padx=(20, 5), pady=(20, 10), sticky="NSWE")
+        self.clear_button.grid(row=6, column=0, padx=(20, 5), pady=(20, 10), sticky="NSWE")
+        self.quit_button.grid(row=6, column=2, padx=(20, 5), pady=(20, 10), sticky="NSWE")
 
     def _create_logger(self):
         self.logger = logging.getLogger()
@@ -92,8 +101,9 @@ class OpenAIGUI(ctk.CTk):
         command = self.prompt_entry.get()
         completion = openai.Completion.create(engine=self.model_var.get(), prompt=command,
                                               temperature=0,
-                                              max_tokens=int(self.max_tokens_var.get())
-        )
+                                              max_tokens=int(
+                                                  self.max_tokens_var.get())
+                                              )
         result = completion.choices[0].text
         self.logger.info(result)
         tk.messagebox.showinfo("Answer", result)
