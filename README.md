@@ -9,7 +9,7 @@
 
 # Screenshot
 
-![ctkoaigui1](https://user-images.githubusercontent.com/86234226/214511149-7bed63b5-5b12-46d3-8f58-1a072b560a08.PNG)
+![Capture1](https://user-images.githubusercontent.com/86234226/214821986-91f2dce9-7076-4775-8905-460249773e94.PNG)
 
 # Features
 * The application has a sidebar that contains options to select the OpenAI model, maximum tokens, appearance mode, and UI scaling.
