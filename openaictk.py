@@ -7,8 +7,10 @@ import os
 import sys
 import requests
 import urllib.request
-from PIL import Image
+from tkinter import PhotoImage
+from PIL import Image, ImageTk
 from io import BytesIO
+from resizeimage import resizeimage
 from api_key import key
 
 models = ["text-davinci-003", "text-davinci-002",
@@ -42,6 +44,12 @@ class OpenAIGUI(ctk.CTk):
         self.tabview = ctk.CTkTabview(self, width=250)
         self.tabview.add("Text models")
         self.tabview.add("Dall-E")
+
+        self.photo_frame = ctk.CTkFrame(
+            self.tabview.tab('Dall-E'), width=256, height=256)
+
+        self.image_label = ctk.CTkLabel(
+            self.photo_frame, width=256, height=256, text="Photo display")
 
         self.prompt_entry = ctk.CTkEntry(
             self.tabview.tab('Text models'), width=250, height=100, placeholder_text="Enter your statement or question:")
@@ -78,6 +86,8 @@ class OpenAIGUI(ctk.CTk):
         self.set_picture_size_var = ctk.StringVar(value="256x256")
         self.set_picture_selector = ctk.CTkComboBox(
             self.sidebar_frame, variable=self.set_picture_size_var, values=picture_size)
+
+        self.image_var = ctk.StringVar()
 
         self.generate_button = ctk.CTkButton(
             self.tabview.tab('Text models'), text="Generate answer", command=self.generate_response)
@@ -126,6 +136,7 @@ class OpenAIGUI(ctk.CTk):
         self.max_tokens_selector.grid(
             row=4, column=0)
         self.dalle_label.grid(row=5, column=0)
+        self.image_label.grid(row=5, column=0)
         self.sizelabel.grid(row=6, column=0)
         self.set_picture_selector.grid(row=7, column=0, sticky="n")
         self.scaling_optionemenu.grid(row=12, column=0, sticky="n")
@@ -139,6 +150,7 @@ class OpenAIGUI(ctk.CTk):
         self.generate_button.grid(row=5, column=2, padx=20, pady=10)
         self.dalle_impression.grid(row=0, column=2, padx=20, pady=10)
         self.create_image.grid(row=5, column=2, padx=20, pady=10)
+        self.photo_frame.grid(row=6, column=2, padx=20, pady=10)
         self.open_log.grid(row=6, column=2, padx=20, pady=10)
         self.clear_button.grid(row=13, column=0, padx=20, pady=10)
         self.quit_button.grid(row=14, column=0, padx=20, pady=10)
@@ -172,8 +184,13 @@ class OpenAIGUI(ctk.CTk):
         webUrl = urllib.request.urlopen(image_url)
         img = Image.open(webUrl)
         file_name = os.path.basename('DallE')[:255] + '.png'
-        img.show()
         img.save(file_name)
+        # DISPLAY IMAGE IN LABEL OF THE FRAME
+        img.show(str(self.image_var.get()))
+        img = resizeimage.resize_cover(
+            file_name, size=[256, 256])
+        self.img = ImageTk.PhotoImage(img)
+        self.image_label.config(image=img)
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         ctk.set_appearance_mode(new_appearance_mode)
