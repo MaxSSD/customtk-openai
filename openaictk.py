@@ -13,7 +13,7 @@ from api_key import key
 
 models = ["text-davinci-003", "text-davinci-002",
           "text-curie-001", "text-babbage-001", "text-ada-001"]
-max_tokens_list = [256, 2000, 8000]
+max_tokens_list = ["256", "2000", "8000"]
 picture_size = ["256x256", "512x512", "1024x1024"]
 mode = ["Light", "Dark", "System"]
 scaling = ["80%", "90%", "100%", "110%", "120%"]
@@ -27,7 +27,7 @@ class OpenAIGUI(ctk.CTk):
         ctk.set_default_color_theme("dark-blue")
 
         self.title('OpenAI GUI')
-        self.geometry("1100x580")
+        self.geometry("1100x700")
         self.resizable(True, True)
 
         self._create_widgets()
@@ -35,16 +35,23 @@ class OpenAIGUI(ctk.CTk):
         self._create_logger()
 
     def _create_widgets(self):
-        self.prompt_entry = ctk.CTkEntry(
-            self, width=250, height=100, placeholder_text="Enter your statement or question:")
-
-        self.text_in = tk.StringVar()
-        self.textbox = ctk.CTkEntry(
-            self, width=250, height=400, textvariable=self.text_in, state='normal', justify='left', exportselection=True)
-
         # create sidebar frame with widgets
         self.sidebar_frame = ctk.CTkFrame(self, width=140, corner_radius=0)
 
+        # create tabview
+        self.tabview = ctk.CTkTabview(self, width=250)
+        self.tabview.add("Text models")
+        self.tabview.add("Dall-E")
+
+        self.prompt_entry = ctk.CTkEntry(
+            self.tabview.tab('Text models'), width=250, height=100, placeholder_text="Enter your statement or question:")
+
+        self.dalle_prompt = ctk.StringVar()
+        self.dalle_impression = ctk.CTkEntry(self.tabview.tab(
+            'Dall-E'), width=500, height=100, placeholder_text="Enter image suggestion:", textvariable=self.dalle_prompt)
+        self.text_in = ctk.StringVar()
+        self.textbox = ctk.CTkEntry(
+            self.tabview.tab('Text models'), width=500, height=300, textvariable=self.text_in, justify='left', state="disabled")
         # GUI LABEL
         self.logo_label = ctk.CTkLabel(
             self.sidebar_frame, text="OpenAI GUI", font=ctk.CTkFont(size=20, weight="bold"))
@@ -52,45 +59,36 @@ class OpenAIGUI(ctk.CTk):
         self.modellabel = ctk.CTkLabel(
             self.sidebar_frame, text="Models:", font=("Arial", 13, 'bold'))
 
-        self.dalle_prompt = tk.StringVar()
-        self.model_var = tk.StringVar()
-        self.model_var.set("text-davinci-003")
-        self.model_selector = tk.OptionMenu(
-            self.sidebar_frame, self.model_var, *models)
-        self.model_selector.config(
-            font=("Arial", 12), fg="White", bg="#004C99", highlightbackground="#404040", highlightcolor="#404040", activebackground="#004C99", disabledforeground="#404040", anchor="w")
+        self.model_var = ctk.StringVar(value="text-davinci-003")
+        self.model_selector = ctk.CTkComboBox(
+            self.sidebar_frame, variable=self.model_var, values=models)
 
         self.tokenlabel = ctk.CTkLabel(
             self.sidebar_frame, text="Max tokens:", font=("Arial", 13, 'bold'))
 
-        self.max_tokens_var = tk.StringVar()
-        self.max_tokens_var.set("256")
-        self.max_tokens_selector = tk.OptionMenu(
-            self.sidebar_frame, self.max_tokens_var, *max_tokens_list)
-        self.max_tokens_selector.config(
-            font=("Arial", 12), fg="White", bg="#004C99", highlightbackground="#404040", highlightcolor="#404040", activebackground="#004C99", disabledforeground="#404040", anchor="w")
+        self.max_tokens_var = ctk.StringVar(value="256")
+        self.max_tokens_selector = ctk.CTkComboBox(
+            self.sidebar_frame, variable=self.max_tokens_var, values=max_tokens_list)
 
         self.dalle_label = ctk.CTkLabel(
             self.sidebar_frame, text="Dall-E", font=("Arial", 17, 'bold'))
         self.sizelabel = ctk.CTkLabel(
             self.sidebar_frame, text="Picture size:", font=("Arial", 13, 'bold'))
 
-        self.set_picture_size_var = tk.StringVar()
-        self.set_picture_size_var.set("256x256")
-        self.set_picture_selector = tk.OptionMenu(
-            self.sidebar_frame, self.set_picture_size_var, *picture_size)
-        self.set_picture_selector.config(
-            font=("Arial", 12), fg="White", bg="#004C99", highlightbackground="#404040", highlightcolor="#404040", activebackground="#004C99", disabledforeground="#404040", anchor="w")
-
-        self.set_picture_selector.config(font=("Arial", 12), fg="White", bg="#004C99", highlightbackground="#404040",
-                                         highlightcolor="#404040", activebackground="#004C99", disabledforeground="#404040")
+        self.set_picture_size_var = ctk.StringVar(value="256x256")
+        self.set_picture_selector = ctk.CTkComboBox(
+            self.sidebar_frame, variable=self.set_picture_size_var, values=picture_size)
 
         self.generate_button = ctk.CTkButton(
-            self, text="Generate answer", fg_color="#004C99", bg_color="#004C99", command=self.generate_response, font=("Arial", 13))
+            self.tabview.tab('Text models'), text="Generate answer", command=self.generate_response)
+        self.create_image = ctk.CTkButton(self.tabview.tab(
+            'Dall-E'), text="Create image", command=self.generate_image)
+        self.open_log = ctk.CTkButton(
+            self.tabview.tab('Text models'), text="Open file", command=self.open_file)
         self.clear_button = ctk.CTkButton(
-            self, text="Clear prompt", fg_color="#004C99", bg_color="#004C99", command=self.clear_prompt, font=("Arial", 13))
+            self.sidebar_frame, text="Clear prompt", command=self.clear_prompt)
         self.quit_button = ctk.CTkButton(
-            self, text="Quit app", fg_color="#004C99", bg_color="#004C99", command=self.quit_app, font=("Arial", 12))
+            self.sidebar_frame, text="Quit app", command=self.quit_app, fg_color='Red')
 
         # Window customization
         self.appearance_mode_label = ctk.CTkLabel(
@@ -104,16 +102,6 @@ class OpenAIGUI(ctk.CTk):
         self.scaling_label.grid(row=11, column=0, padx=20, pady=(10, 0))
         self.scaling_optionemenu = ctk.CTkOptionMenu(
             self.sidebar_frame, values=scaling, command=self.change_scaling_event)
-        # create tabview
-        self.tabview = ctk.CTkTabview(self, width=250)
-        self.tabview.grid(row=0, column=2, padx=(
-            20, 0), pady=(20, 0), sticky="n")
-        # ADD TAB FOCUS
-        self.tabview.add("Text models")
-        self.tabview.add("Dall-E")
-        self.tabview.tab("Text models").grid_columnconfigure(
-            0, weight=1)  # configure grid of individual tabs
-        self.tabview.tab("Dall-E").grid_columnconfigure(0, weight=1)
 
         self.generate_button.bind("<Return>", self.generate_response)
         self.clear_button.bind("<Delete>", self.clear_prompt)
@@ -123,32 +111,37 @@ class OpenAIGUI(ctk.CTk):
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure((2, 3), weight=0)
         self.grid_rowconfigure((0, 1, 2), weight=1)
-        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
+        self.logo_label.grid(row=0, column=0, padx=20, pady=20, sticky='n')
+        # Tab view
+        self.tabview.tab("Text models").grid_columnconfigure(
+            1, weight=5)  # configure grid of individual tabs
+        self.tabview.tab("Dall-E").grid_columnconfigure(1, weight=5)
+        self.tabview.grid(row=0, column=1, padx=20, pady=20, sticky="n")
         # Sidebar
-        self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
-        self.sidebar_frame.grid_rowconfigure(4, weight=1)
-        self.modellabel.grid(row=1, column=0, sticky="n")
-        self.model_selector.grid(row=2, column=0, sticky="n")
-        self.tokenlabel.grid(row=3, column=0, sticky="n")
+        self.sidebar_frame.grid(row=0, column=0, rowspan=7, sticky="nsew")
+        self.sidebar_frame.grid_rowconfigure(7, weight=1)
+        self.modellabel.grid(row=1, column=0)
+        self.model_selector.grid(row=2, column=0)
+        self.tokenlabel.grid(row=3, column=0)
         self.max_tokens_selector.grid(
-            row=4, column=0, sticky="n")
-        self.dalle_label.grid(row=5, column=0, sticky="n")
-        self.sizelabel.grid(row=6, column=0, sticky="n")
+            row=4, column=0)
+        self.dalle_label.grid(row=5, column=0)
+        self.sizelabel.grid(row=6, column=0)
         self.set_picture_selector.grid(row=7, column=0, sticky="n")
         self.scaling_optionemenu.grid(row=12, column=0, sticky="n")
         self.appearance_mode_optionemenu.grid(
-            row=10, column=0, sticky="n")
+            row=10, column=0)
         # Main bar
-        self.prompt_entry.grid(row=0, column=1, padx=(
+        self.prompt_entry.grid(row=0, column=2, padx=(
             20, 5), pady=(25, 10),  sticky="new")
-        self.textbox.grid(row=1, column=1, padx=(
+        self.textbox.grid(row=1, column=2, padx=(
             20, 5), pady=(25, 10), sticky="nsew")
-        self.generate_button.grid(row=6, column=1, padx=(
-            20, 5), pady=(20, 10), sticky="nsew")
-        self.clear_button.grid(row=6, column=0, padx=(
-            20, 5), pady=(20, 10), sticky="nsew")
-        self.quit_button.grid(row=6, column=2, padx=(
-            20, 5), pady=(20, 10), sticky="nsew")
+        self.generate_button.grid(row=5, column=2, padx=20, pady=10)
+        self.dalle_impression.grid(row=0, column=2, padx=20, pady=10)
+        self.create_image.grid(row=5, column=2, padx=20, pady=10)
+        self.open_log.grid(row=6, column=2, padx=20, pady=10)
+        self.clear_button.grid(row=13, column=0, padx=20, pady=10)
+        self.quit_button.grid(row=14, column=0, padx=20, pady=10)
 
     def _create_logger(self):
         self.logger = logging.getLogger()
@@ -167,18 +160,18 @@ class OpenAIGUI(ctk.CTk):
         # tk.messagebox.showinfo("Answer", result)
 
     # ADD DALLE VARIATION AND IMAGE CREATION
-    def generate_image(self, set_picture_size_var):
+    def generate_image(self):
         tk.messagebox.showinfo('Creating and saving image...')
         prompt_ins = self.dalle_prompt.get()
         response = openai.Image.create(
             prompt=prompt_ins,
             n=1,
-            size=set_picture_size_var.get()
+            size=self.set_picture_size_var.get()
         )
         image_url = response['data'][0]['url']
         webUrl = urllib.request.urlopen(image_url)
         img = Image.open(webUrl)
-        file_name = os.path.basename(prompt_ins)[:255] + '.png'
+        file_name = os.path.basename('DallE')[:255] + '.png'
         img.show()
         img.save(file_name)
 
@@ -189,9 +182,13 @@ class OpenAIGUI(ctk.CTk):
         new_scaling_float = int(new_scaling.replace("%", "")) / 100
         ctk.set_widget_scaling(new_scaling_float)
 
+    def open_file(self):
+        os.startfile('answers.txt', 'open')
+
     def clear_prompt(self):
         self.prompt_entry.delete(0, tk.END)
         self.textbox.delete(0, tk.END)
+        self.dalle_prompt.delete(0, tk.END)
 
     def quit_app(self):
         self.destroy()
