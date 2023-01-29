@@ -2,14 +2,15 @@
 *This is a GUI application built using the tkinter library in Python and the customtkinter library, which is a custom tkinter library built by the developers. It uses the OpenAI API to generate responses based on the user input.*
 
 # TBD
-* Add entry prompt send to textbox.
+* Fix tabs
 * Scrollbar in textbox.
-* Open answer.txt file button and save chat history.
+* Save chat history.
 * Chatbot db.
 
 # Screenshot
+![Capture4](https://user-images.githubusercontent.com/86234226/215324460-2f557892-0c45-43d5-a08c-068bb440cbf5.PNG)
 
-![Capture3](https://user-images.githubusercontent.com/86234226/215315992-cc9af43e-4bb8-4543-9590-b6a25ea120e9.PNG)
+![Capture5](https://user-images.githubusercontent.com/86234226/215324315-859a2368-b9ce-4e27-ae92-69b3d5c7ee29.PNG)
 
 # Features
 * The application has a sidebar that contains options to select the OpenAI model, maximum tokens, appearance mode, and UI scaling.
