@@ -188,9 +188,9 @@ class OpenAIGUI(ctk.CTk):
         # DISPLAY IMAGE IN LABEL OF THE FRAME
         img.show(str(self.image_var.get()))
         img = resizeimage.resize_cover(
-            file_name, size=[256, 256])
+            file_name, size=any)
         self.img = ImageTk.PhotoImage(img)
-        self.image_label.config(image=img)
+        self.image_label.config(image=self.img)
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         ctk.set_appearance_mode(new_appearance_mode)
