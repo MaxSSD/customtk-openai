@@ -205,7 +205,7 @@ class OpenAIGUI(ctk.CTk):
     def clear_prompt(self):
         self.prompt_entry.delete(0, tk.END)
         self.textbox.delete(0, tk.END)
-        self.dalle_prompt.delete(0, tk.END)
+        self.dalle_impression.delete(0, tk.END)
 
     def quit_app(self):
         self.destroy()
